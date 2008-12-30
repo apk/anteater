@@ -9,3 +9,5 @@ One of the two things: Instead of depends="a, b" you say
 dep="a" dep="b"; and you can say from="c" to make task c
 depend on this task instead of declaring so at task c.
 Comes in handy for localizing the cleanup stuff.
+
+Copyright (C) 2008 Andreas Krey, Ulm, Germany <a.krey@gmx.de>

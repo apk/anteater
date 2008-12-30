@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2008 Andreas Krey, Ulm, Germany <a.krey@gmx.de> -->
 <project name="anteater">
   <dirname property="anteater.dir" file="${ant.file.anteater}"/>
   <delete dir="${anteater.dir}/classes"/>
