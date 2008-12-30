@@ -13,8 +13,14 @@ class Target {
     private Vector<Node> tasks = new Vector<Node> ();
     private Vector<Target> deps = new Vector<Target> ();
 
+    private boolean defined = false;
+
     Target (String n) {
 	name = n;
+    }
+
+    public void setDefined () {
+	defined = true;
     }
 
     public void addDep (Target t) {
@@ -37,6 +43,9 @@ class Target {
     }
 
     public void dump (PrintStream ps, String pre) {
+	if (!defined) {
+	    throw new IllegalArgumentException ("Target " + name + " used but not defined");
+	}
 	ps.println (pre + "<target name=\"" + name + "\"");
 	if (deps != null && deps.size () > 0) {
 	    StringBuffer sb = new StringBuffer ();

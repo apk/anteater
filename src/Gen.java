@@ -13,7 +13,7 @@ import java.io.PrintStream;
 
 public class Gen extends Task {
     private String say, txt;
-    private File dst = new File ("def.xml"), src;
+    private File dst = new File ("anteater.xml"), src;
 
     public void setSay (String say) { this.say = say; }
     public void setDest (File dst) { this.dst = dst; }
@@ -25,8 +25,48 @@ public class Gen extends Task {
 
     private HashMap<String, Target> targets;
 
-    // The method executing the task
-    public void execute() throws BuildException {
+    private Vector<String> readFile (String src) throws IOException {
+	return readFile (new File (src));
+    }
+
+    /** Read file as string vector.
+     * Reads file, converts tabs to spaces (eight of them), and splits
+     * lines according to newlines. Returns a Vector<String> with
+     * the lines.
+     */
+    private Vector<String> readFile (File src) throws IOException {
+	Vector<String> res = new Vector<String> ();
+	StringBuffer sb = new StringBuffer ();
+	Reader f = new FileReader (src);
+	int n = 0;
+	while (true) {
+	    int c = f.read ();
+	    if (c == -1) break;
+	    if (c == '\n') {
+		String r = sb.toString ();
+		res.addElement (r);
+		sb = new StringBuffer ();
+		n = 0;
+	    } else {
+		if (c == '\t') {
+		    do {
+			sb.append (' ');
+			n ++;
+		    } while ((n % 8) != 0);
+		} else {
+		    sb.append ((char)c);
+		    n ++;
+		}
+	    }
+	}
+	String r = sb.toString ();
+	if (r.length () > 0) {
+	    res.addElement (r);
+	}
+	return res;
+    }
+
+    public void execute () throws BuildException {
 	if (say != null) {
 	    System.out.println (say);
 	}
@@ -35,39 +75,7 @@ public class Gen extends Task {
 	try {
 	    if (src != null) {
 		System.out.println (" <- " + src);
-		Vector<String> res = new Vector<String> ();
-		StringBuffer sb = new StringBuffer ();
-		Reader f = new FileReader (src);
-		int n = 0;
-		while (true) {
-		    int c = f.read ();
-		    if (c == -1) break;
-		    if (c == '\n') {
-			String r = sb.toString ();
-			res.addElement (r);
-			sb = new StringBuffer ();
-			n = 0;
-		    } else {
-			if (c == '\t') {
-			    do {
-				sb.append (' ');
-				n ++;
-			    } while ((n % 8) != 0);
-			} else {
-			    sb.append ((char)c);
-			    n ++;
-			}
-		    }
-		}
-		String r = sb.toString ();
-		if (r.length () > 0) {
-		    res.addElement (r);
-		}
-// 	    for (String s: res) {
-// 		System.out.println (">" + s + "<");
-// 	    }
-		ls.parseBody (res);
-// 	    ls.dump ();
+		ls.parseBody (readFile (src));
 	    }
 	    if (txt != null) {
 		Vector<String> res = new Vector<String> ();
@@ -90,6 +98,8 @@ public class Gen extends Task {
 	    ps.close ();
 	} catch (IOException e) {
 	    throw new BuildException (e);
+	} catch (IllegalArgumentException e) {
+	    throw new BuildException (e);
 	}
     }
 
@@ -102,9 +112,31 @@ public class Gen extends Task {
 	return t;
     }
 
+    private Target defTarget (String n) {
+	Target t = getTarget (n);
+	t.setDefined ();
+	return t;
+    }
+
     private static int cnt = 0;
 
     private void interp (Node l) {
+	if (l.tag == "read") {
+	    AttrList al = new AttrList (l.getParam ());
+	    String base = al.pull ("file");
+	    if (base == null || !al.empty ()) {
+		throw new IllegalArgumentException ("extra args in read");
+	    }
+	    try {
+		Node ls = new Node ("*file*", base, 1, readFile (base));
+		for (Node x: ls.getNodes ()) {
+		    interp (x);
+		}
+	    } catch (IOException e) {
+		throw new BuildException (e);
+	    }
+	    return;
+	}
 	if (l.tag == "javac") {
 	    AttrList al = new AttrList (l.getParam ());
 	    String base = al.pull ("dir");
@@ -122,10 +154,10 @@ public class Gen extends Task {
 	    if (!al.empty ()) {
 		throw new IllegalArgumentException ("extra args in javac");
 	    }
-	    Target lcomp = getTarget ("compile-" + ++ cnt);
-	    Target lclean = getTarget ("clean-" + ++ cnt);
-	    getTarget ("compile").addDep (lcomp);
-	    getTarget ("clean").addDep (lclean);
+	    Target lcomp = defTarget ("compile-" + ++ cnt);
+	    Target lclean = defTarget ("clean-" + ++ cnt);
+	    defTarget ("compile").addDep (lcomp);
+	    defTarget ("clean").addDep (lclean);
 	    // Java is stupid
 	    final String srcdir = src;
 	    final String clsdir = cls;
@@ -175,7 +207,7 @@ public class Gen extends Task {
 	    AttrList al = new AttrList (l.getParam ());
 	    String n = al.pull ("name");
 	    if (n == null) throw new IllegalArgumentException ("no name in target");
-	    Target t = getTarget (n);
+	    Target t = defTarget (n);
 	    while ((n = al.pull ("dep")) != null) {
 		t.addDep (getTarget (n));
 	    }
