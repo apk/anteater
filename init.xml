@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="anteater">
+  <dirname property="anteater.dir" file="${ant.file.anteater}"/>
+  <delete dir="${anteater.dir}/classes"/>
+  <mkdir dir="${anteater.dir}/classes"/>
+  <javac srcdir="${anteater.dir}/src" destdir="${anteater.dir}/classes"/>
+  <taskdef name="anteater"
+           classname="org.uberluser.ant.Gen"
+           classpath="${anteater.dir}/classes"/>
+</project>
