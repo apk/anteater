@@ -24,6 +24,7 @@ public class Gen extends Task {
     }
 
     private HashMap<String, Target> targets;
+    private Vector<Node> toplevel = new Vector<Node> ();
 
     private Vector<String> readFile (String src) throws IOException {
         return readFile (new File (src));
@@ -90,7 +91,10 @@ public class Gen extends Task {
             }
             PrintStream ps = new PrintStream (new FileOutputStream (dst));
             ps.println ("<!-- generated - do not edit - use " + src + " -->");
-            ps.println ("<project>");
+            ps.println ("<project xmlns:ivy=\"antlib:org.apache.ivy.ant\">");
+            for (Node n: toplevel) {
+                n.dumpXML (ps, "  ");
+            }
             for (Target t: targets.values ()) {
                 t.dump (ps, "  ");
             }
@@ -197,9 +201,15 @@ public class Gen extends Task {
                 addParam ("dir", jardir);
             }});
             lcomp.addNode (new Node ("jar") {{
-                addParam ("destfile", jardir + "/cls.jar"/*XXX*/);
+                addParam ("destfile", jardir + "/${ivy.module}.jar"/*XXX*/);
                 addNode (new Node ("fileset") {{
                     addParam ("dir", clsdir);
+                }});
+            }});
+            lcomp.addNode (new Node ("jar") {{
+                addParam ("destfile", jardir + "/${ivy.module}-sources.jar"/*XXX*/);
+                addNode (new Node ("fileset") {{
+                    addParam ("dir", srcdir);
                 }});
             }});
             //   <target name="compile" depends="resolve" description="--> compile the project">
@@ -216,6 +226,17 @@ public class Gen extends Task {
 
             return;
         }
+        if (l.tag == "toplevel") {
+            AttrList al = new AttrList (l.getParam ());
+            if (!al.empty ()) {
+                throw new IllegalArgumentException ("toplevel has no attrs");
+            }
+            for (Node x: l.getNodes ()) {
+                toplevel.addElement (x);
+            }
+            return;
+        }
+            
         if (l.tag == "target") {
             AttrList al = new AttrList (l.getParam ());
             String n = al.pull ("name");
