@@ -46,7 +46,8 @@ class Target {
 	if (!defined) {
 	    throw new IllegalArgumentException ("Target " + name + " used but not defined");
 	}
-	ps.println (pre + "<target name=\"" + name + "\"");
+	ps.println ();
+	String st = pre + "<target name=\"" + name + "\"";
 	if (deps != null && deps.size () > 0) {
 	    StringBuffer sb = new StringBuffer ();
 	    sb.append (pre);
@@ -57,15 +58,21 @@ class Target {
 		sb.append (deps.elementAt (i).name);
 	    }
 	    sb.append ("\"");
-	    ps.println (sb.toString ());
+	    ps.println (st);
+	    st = sb.toString ();
 	}
 	for (String k: attrs.keySet ()) {
-	    ps.println (pre + "        " + k + "=\"" + attrs.get (k) + "\"");
+	    ps.println (st);
+	    st = pre + "        " + k + "=\"" + attrs.get (k) + "\"";
 	}
-	ps.println (pre + "        >");
-	for (Node l: tasks) {
-	    l.dumpXML (ps, pre + "  ");
+	if (tasks.size () == 0) {
+	    ps.println (st + "/>");
+	} else {
+	    ps.println (st + ">");
+	    for (Node l: tasks) {
+		l.dumpXML (ps, pre + "  ");
+	    }
+	    ps.println (pre + "</target>");
 	}
-	ps.println (pre + "</target>");
     }
 }

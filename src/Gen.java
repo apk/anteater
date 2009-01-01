@@ -139,29 +139,25 @@ public class Gen extends Task {
 	}
 	if (l.tag == "javac") {
 	    AttrList al = new AttrList (l.getParam ());
-	    String base = al.pull ("dir");
-	    if (base == null) base = "";
-	    else base += "/";
-	    String src = al.pull ("src");
-	    if (src == null) src = "src";
-	    src = base + src;
-	    String cls = al.pull ("classes");
-	    if (cls == null) cls = "classes";
-	    cls = base + cls;
-	    String jar = al.pull ("jar");
-	    if (jar == null) jar = "jar";
-	    jar = base + jar;
+	    Basifier base = new Basifier (al.pull ("dir"));
+
+	    final String srcdir = base.basify (al.pull ("src"), "src");
+	    final String clsdir = base.basify (al.pull ("classes"), "classes");
+	    final String jardir = base.basify (al.pull ("jar"), "jar");
+	    final String [] cps = al.pullAll ("cp");
+	    final String [] dcps = al.pullAll ("dep-cp");
 	    if (!al.empty ()) {
 		throw new IllegalArgumentException ("extra args in javac");
 	    }
-	    Target lcomp = defTarget ("compile-" + ++ cnt);
-	    Target lclean = defTarget ("clean-" + ++ cnt);
+	    final String tag = clsdir.replace ('/', '-');
+	    final Target lcomp = defTarget ("compile-" + tag);
+	    final Target lclean = defTarget ("clean-" + tag);
 	    defTarget ("compile").addDep (lcomp);
 	    defTarget ("clean").addDep (lclean);
-	    // Java is stupid
-	    final String srcdir = src;
-	    final String clsdir = cls;
-	    final String jardir = jar;
+
+	    lclean.addNode (new Node ("delete") {{
+		    addParam ("dir", clsdir);
+	    }});
 	    lcomp.addNode (new Node ("delete") {{
 		    addParam ("dir", clsdir);
 	    }});
@@ -172,6 +168,23 @@ public class Gen extends Task {
 		    addParam ("srcdir", srcdir);
 		    addParam ("destdir", clsdir);
 		    addNode (new Node ("classpath") {{
+			if (cps != null) {
+			    for (final String cp: cps) {
+				addNode (new Node ("pathelement") {{
+				    addParam ("location", cp);
+				}});
+			    }
+			}
+			if (dcps != null) {
+			    for (final String cp: dcps) {
+				addNode (new Node ("pathelement") {{
+				    addParam ("location", cp);
+				}});
+				lcomp.addDep (getTarget ("compile-" +
+							 cp.replace ('/',
+								     '-')));
+			    }
+			}
 			addNode (new Node ("fileset") {{
 			    addParam ("dir", "${basedir}");
 			    addNode (new Node ("include") {{

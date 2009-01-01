@@ -116,9 +116,11 @@ class Node {
 	    while (s.length () > q && isidc (s.charAt (q))) {
 		q ++;
 	    }
-	    if (q > p && s.length () > q && isspc (s.charAt (q))) {
+	    if (q > p && ((s.length () > q && isspc (s.charAt (q))) ||
+			  s.length () == q))
+	    {
 		String n = s.substring (p, q);
-		q ++;
+		if (s.length () > q) q ++;
 		// There is a tag
 		if (p > pos && tg != null) {
 		    // It start the body of the tag we are scanning

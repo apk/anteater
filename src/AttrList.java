@@ -77,6 +77,19 @@ class AttrList {
 	return null;
     }
 
+    public String [] pullAll (String n) {
+	Vector<String> r = new Vector<String> ();
+	while (true) {
+	    String v = pull (n);
+	    if (v == null) break;
+	    r.addElement (v);
+	}
+	if (r.size () == 0) return null;
+	String [] a = new String [r.size ()];
+	r.copyInto (a);
+	return a;
+    }
+
     public boolean isPresent (String n) {
 	n = n.intern ();
 	for (int i = 0; i < names.size (); i ++) {
