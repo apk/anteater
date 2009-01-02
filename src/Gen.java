@@ -222,6 +222,9 @@ public class Gen extends Task {
                         addParam ("dir", srcdir);
                     }});
                 }});
+                lclean.addNode (new Node ("delete") {{
+                    addParam ("dir", jardir);
+                }});
             }
             //   <target name="compile" depends="resolve" description="--> compile the project">
             //     <mkdir dir="${classes.dir}" />
