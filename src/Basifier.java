@@ -12,6 +12,12 @@ public class Basifier {
         return base + s;
     }
     public String basify (String s, String def) {
-        return basify (s != null ? s : def);
+        if (s == null) {
+            if (def == null) {
+                return null;
+            }
+            return basify (def);
+        }
+        return basify (s);
     }
 }
