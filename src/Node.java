@@ -88,6 +88,7 @@ class Node {
         String tg = null;
         String par = null;
         int pos = 0;
+        System.out.println (",-----");
         for (String s: il) {
             System.out.println ("'" + s + "'");
             int p = 0;
@@ -96,6 +97,10 @@ class Node {
             }
             if (s.length () == p) {
                 // Empty line
+                continue;
+            }
+            if (s.charAt (p) == ';') {
+                // Comment of the 'complete ignore' kind
                 continue;
             }
             if (sub != null) {
@@ -150,6 +155,7 @@ class Node {
         if (tg != null) {
             addsub (new Node (tg, par, 0, sub));
         }
+        System.out.println ("`-----");
     }
 
     private void addsub (Node l) {
