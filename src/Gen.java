@@ -147,7 +147,8 @@ public class Gen extends Task {
 
             final String srcdir = base.basify (al.pull ("src"), "src");
             final String clsdir = base.basify (al.pull ("classes"), "classes");
-            final String jardir = base.basify (al.pull ("jar"), "jar");
+            final String jardir = base.basify (al.pull ("jardir"), "jar");
+            final String jarname = base.basify (al.pull ("jar"), null);
             final String [] cps = al.pullAll ("cp");
             final String [] dcps = al.pullAll ("dep-cp");
             if (!al.empty ()) {
@@ -158,6 +159,13 @@ public class Gen extends Task {
             final Target lclean = defTarget ("clean-" + tag);
             defTarget ("compile").addDep (lcomp);
             defTarget ("clean").addDep (lclean);
+
+            final Target ljar =
+                jarname == null ? null : defTarget ("jar-" + tag);
+            if (ljar != null) {
+                defTarget ("jar").addDep (ljar);
+                ljar.addDep (lcomp);
+            }
 
             lclean.addNode (new Node ("delete") {{
                 addParam ("dir", clsdir);
@@ -197,21 +205,24 @@ public class Gen extends Task {
                     }});
                 }});
             }});
-            lcomp.addNode (new Node ("mkdir") {{
-                addParam ("dir", jardir);
-            }});
-            lcomp.addNode (new Node ("jar") {{
-                addParam ("destfile", jardir + "/${ivy.module}.jar"/*XXX*/);
-                addNode (new Node ("fileset") {{
-                    addParam ("dir", clsdir);
+
+            if (ljar != null) {
+                ljar.addNode (new Node ("mkdir") {{
+                    addParam ("dir", jardir);
                 }});
-            }});
-            lcomp.addNode (new Node ("jar") {{
-                addParam ("destfile", jardir + "/${ivy.module}-sources.jar"/*XXX*/);
-                addNode (new Node ("fileset") {{
-                    addParam ("dir", srcdir);
+                ljar.addNode (new Node ("jar") {{
+                    addParam ("destfile", jardir + "/" + jarname + ".jar");
+                    addNode (new Node ("fileset") {{
+                        addParam ("dir", clsdir);
+                    }});
                 }});
-            }});
+                ljar.addNode (new Node ("jar") {{
+                    addParam ("destfile", jardir + "/" + jarname + ".jar");
+                    addNode (new Node ("fileset") {{
+                        addParam ("dir", srcdir);
+                    }});
+                }});
+            }
             //   <target name="compile" depends="resolve" description="--> compile the project">
             //     <mkdir dir="${classes.dir}" />
             //     <javac srcdir="${src.dir}" destdir="${classes.dir}" debug="true" source="1.6" target="1.6">
