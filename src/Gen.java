@@ -217,7 +217,7 @@ public class Gen extends Task {
                     }});
                 }});
                 ljar.addNode (new Node ("jar") {{
-                    addParam ("destfile", jardir + "/" + jarname + ".jar");
+                    addParam ("destfile", jardir + "/" + jarname + "-sources.jar");
                     addNode (new Node ("fileset") {{
                         addParam ("dir", srcdir);
                     }});
