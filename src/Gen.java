@@ -158,6 +158,7 @@ public class Gen extends Task {
             final Target lcomp = defTarget ("compile-" + tag);
             final Target lclean = defTarget ("clean-" + tag);
             defTarget ("compile").addDep (lcomp);
+            lcomp.addDep (defTarget ("pre-compile"));
             defTarget ("clean").addDep (lclean);
 
             final Target ljar =
