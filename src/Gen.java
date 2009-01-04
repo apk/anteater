@@ -151,6 +151,7 @@ public class Gen extends Task {
             final String jarname = base.basify (al.pull ("jar"), null);
             final String [] cps = al.pullAll ("cp");
             final String [] dcps = al.pullAll ("dep-cp");
+            final String [] asrc = al.pullAll ("extra-src");
             if (!al.empty ()) {
                 throw new IllegalArgumentException ("extra args in javac");
             }
@@ -179,6 +180,13 @@ public class Gen extends Task {
             }});
             lcomp.addNode (new Node ("javac") {{
                 addParam ("srcdir", srcdir);
+                if (asrc != null) {
+                    for (final String as: asrc) {
+                        addNode (new Node ("src") {{
+                            addParam ("path", as);
+                        }});
+                    }
+                }
                 addParam ("destdir", clsdir);
                 addNode (new Node ("classpath") {{
                     if (cps != null) {
