@@ -141,6 +141,30 @@ public class Gen extends Task {
             }
             return;
         }
+        if (l.tag == "write") {
+            AttrList al = new AttrList (l.getParam ());
+            String base = al.pull ("file");
+            if (base == null || !al.empty ()) {
+                throw new IllegalArgumentException ("extra args in write");
+            }
+            Vector<Node> xs = l.getNodes ();
+            if (xs.size () != 1) {
+                throw new IllegalArgumentException ("not one node in write");
+            }
+
+            try {
+                PrintStream ps = new PrintStream (new FileOutputStream (base));
+                ps.println ("<!-- generated - do not edit - use " + src + " -->");
+                Node n = xs.elementAt (0);
+                n.dumpXML (ps, "");
+                ps.close ();
+            } catch (IOException e) {
+                throw new BuildException (e);
+            } catch (IllegalArgumentException e) {
+                throw new BuildException (e);
+            }
+            return;
+        }
         if (l.tag == "javac") {
             AttrList al = new AttrList (l.getParam ());
             Basifier base = new Basifier (al.pull ("dir"));
