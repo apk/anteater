@@ -118,7 +118,10 @@ class Node {
             }
             // See if there is a tag
             int q = p;
-            while (s.length () > q && isidc (s.charAt (q))) {
+            while (s.length () > q &&
+                   (isidc (s.charAt (q)) ||
+                    (q == 0 && s.charAt (q) == '#')))
+            {
                 q ++;
             }
             if (q > p && ((s.length () > q && isspc (s.charAt (q))) ||
