@@ -255,6 +255,13 @@ public class Gen extends Task {
                         addParam ("dir", srcdir);
                     }});
                 }});
+                ljar.addNode (new Node ("jar") {{
+                    addParam ("destfile", jardir + "/" + jarname + "-git.jar");
+                    addNode (new Node ("fileset") {{
+                        addParam ("dir", ".");
+                        addParam ("excludes", "jar/**, classes/**, lib/**, tmp/**");
+                    }});
+                }});
                 lclean.addNode (new Node ("delete") {{
                     addParam ("dir", jardir);
                 }});
